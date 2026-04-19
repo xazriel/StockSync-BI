@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Operational\UnitManager;
 
 Route::view('/', 'welcome');
 
@@ -13,3 +14,5 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 require __DIR__.'/auth.php';
+
+Route::get('/units', UnitManager::class)->name('units.index')->middleware('auth');

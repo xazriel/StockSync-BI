@@ -39,4 +39,9 @@ public function getRestockRecommendationAttribute()
     return 0;
 }
 
+public function unit()
+{
+    return $this->belongsTo(Unit::class);
+}
+
 }

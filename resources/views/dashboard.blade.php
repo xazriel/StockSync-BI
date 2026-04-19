@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             @php
-                // Kita normalisasi role di sini agar pengecekan di bawah stabil
+                // Normalisasi role agar pengecekan stabil
                 $currentRole = strtolower(trim(Auth::user()->role));
             @endphp
 
@@ -38,7 +38,22 @@
                         </div>
                     </div>
 
-                    {{-- Area Kasir --}}
+                    {{-- SECTION 1: INPUT PRODUK HP BARU (RAFI) --}}
+                    <div class="mt-4 mb-8">
+                        <livewire:operational.product-manager />
+                    </div>
+
+                    <hr class="my-8 border-gray-200">
+
+                    {{-- SECTION 2: PENGATURAN SATUAN (UNITS) --}}
+                    <div class="mt-4 mb-8">
+                        <h4 class="text-md font-semibold mb-4 text-gray-700 uppercase tracking-wider">📏 Pengaturan Satuan Barang</h4>
+                        <livewire:operational.unit-manager />
+                    </div>
+
+                    <hr class="my-8 border-gray-200">
+
+                    {{-- SECTION 3: AREA KASIR --}}
                     <div class="mt-4 mb-8">
                         <h4 class="text-md font-semibold mb-4 text-gray-700 uppercase tracking-wider">🛒 Area Kasir Penjualan</h4>
                         <livewire:operational.cart />
@@ -46,15 +61,15 @@
 
                     <hr class="my-8 border-gray-200">
 
-                    {{-- Bagian Inventaris Rafi --}}
+                    {{-- SECTION 4: DAFTAR INVENTARIS RAFI --}}
                     <div class="mt-4 mb-8">
-                        {{-- KASIH KEY AGAR TIDAK BENTROK --}}
+                        <h4 class="text-md font-semibold mb-4 text-gray-700 uppercase tracking-wider">📦 Daftar Stok Inventaris</h4>
                         <livewire:operational.product-list :key="'list-staff-' . Auth::id()" />
                     </div>
 
                     <hr class="my-8 border-dashed">
 
-                    {{-- Fitur Pengeluaran --}}
+                    {{-- SECTION 5: MANAJEMEN PENGELUARAN --}}
                     <div class="mt-4">
                         <h4 class="text-md font-semibold mb-4 text-gray-700 uppercase tracking-wider">💸 Manajemen Pengeluaran</h4>
                         <livewire:operational.expense-manager />
@@ -94,14 +109,13 @@
 
                     {{-- Data Tabel BI Bintang --}}
                     <div class="mt-4">
-                        {{-- KASIH KEY BERBEDA UNTUK BINTANG --}}
                         <livewire:operational.product-list :key="'list-manager-' . Auth::id()" />
                     </div>
                 </div>
             @endif
 
             {{-- FOOTER INFO --}}
-            <div class="mt-4 text-center text-gray-400 text-xs">
+            <div class="mt-8 text-center text-gray-400 text-xs">
                 Sistem Terintegrasi Toko Anugerah Ponsel &copy; 2026 - Final Project Rafi & Bintang
             </div>
         </div>

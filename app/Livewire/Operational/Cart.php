@@ -17,13 +17,18 @@ class Cart extends Component
     {
         $product = Product::find($productId);
 
-        if ($product->stock <= 0) {
+        if (!$product || $product->stock <= 0) {
             session()->flash('error', 'Stok Habis!');
             return;
         }
 
         if (isset($this->cart[$productId])) {
-            $this->cart[$productId]['qty']++;
+            // Cek apakah kalau ditambah stok masih cukup
+            if ($this->cart[$productId]['qty'] < $product->stock) {
+                $this->cart[$productId]['qty']++;
+            } else {
+                session()->flash('error', 'Stok tidak mencukupi!');
+            }
         } else {
             $this->cart[$productId] = [
                 'name' => $product->name,
@@ -34,6 +39,42 @@ class Cart extends Component
         $this->calculateTotal();
     }
 
+    // METHOD TAMBAH QUANTITY
+    public function incrementQty($productId)
+    {
+        $product = Product::find($productId);
+        
+        if ($this->cart[$productId]['qty'] < $product->stock) {
+            $this->cart[$productId]['qty']++;
+            $this->calculateTotal();
+        } else {
+            session()->flash('error', 'Maksimal stok tercapai!');
+        }
+    }
+
+    // METHOD KURANG QUANTITY
+    public function decrementQty($productId)
+    {
+        if (isset($this->cart[$productId])) {
+            if ($this->cart[$productId]['qty'] > 1) {
+                $this->cart[$productId]['qty']--;
+            } else {
+                // Jika qty 1 lalu dikurangi, otomatis hapus dari keranjang
+                unset($this->cart[$productId]);
+            }
+            $this->calculateTotal();
+        }
+    }
+
+    // METHOD HAPUS ITEM (Ikon Sampah)
+    public function removeFromCart($productId)
+    {
+        if (isset($this->cart[$productId])) {
+            unset($this->cart[$productId]);
+            $this->calculateTotal();
+        }
+    }
+
     public function calculateTotal()
     {
         $this->total = collect($this->cart)->sum(fn($item) => $item['price'] * $item['qty']);
@@ -41,6 +82,11 @@ class Cart extends Component
 
     public function checkout()
     {
+        if (empty($this->cart)) {
+            session()->flash('error', 'Keranjang kosong!');
+            return;
+        }
+
         // Simpan ke tabel Sales (Header)
         $sale = Sale::create([
             'invoice_number' => 'INV-' . now()->format('YmdHis'),
@@ -66,6 +112,9 @@ class Cart extends Component
         $this->cart = [];
         $this->total = 0;
         session()->flash('success', 'Transaksi Berhasil!');
+        
+        // Refresh halaman agar stok di list produk terupdate
+        $this->dispatch('productUpdated'); 
     }
 
     public function render()
