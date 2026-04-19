@@ -46,4 +46,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Buka app/Models/User.php
+// Tambahkan ini di dalam class User
+
+public function sales()
+{
+    return $this->hasMany(Sale::class);
+}
 }
