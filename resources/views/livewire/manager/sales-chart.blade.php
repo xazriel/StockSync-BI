@@ -80,54 +80,77 @@
         </div>
     </div>
 
-    {{-- SCRIPT CHART.JS --}}
+    {{-- SCRIPT INSTANT REAL-TIME CHART SINKRONISASI --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('livewire:navigated', () => {
-            // 1. Line Chart (Pendapatan)
-            const ctxSales = document.getElementById('salesChart');
-            new Chart(ctxSales, {
-                type: 'line',
-                data: {
-                    labels: @json($labels),
-                    datasets: [{
-                        label: 'Pendapatan',
-                        data: @json($values),
-                        borderColor: '#9333ea',
-                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
+        document.addEventListener('livewire:init', () => {
+            let instanceSalesChart = null;
+            let instanceClassChart = null;
 
-            // 2. Doughnut Chart (Klasifikasi BI)
-            const ctxClass = document.getElementById('classificationChart');
-            new Chart(ctxClass, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Fast Moving', 'Medium Moving', 'Slow Moving'],
-                    datasets: [{
-                        data: [
-                            {{ $classification['fast'] }}, 
-                            {{ $classification['medium'] }}, 
-                            {{ $classification['slow'] }}
-                        ],
-                        backgroundColor: ['#9333ea', '#3b82f6', '#f1f5f9'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: { legend: { display: false } }
+            // Fungsi utama membuat / menggambar grafik Chart.js
+            function buildCharts(labelsData, valuesData, classData) {
+                // Hancurkan chart lama jika ada agar tidak bentrok data (*Crucial untuk Livewire*)
+                if (instanceSalesChart) instanceSalesChart.destroy();
+                if (instanceClassChart) instanceClassChart.destroy();
+
+                // 1. Line Chart (Pendapatan)
+                const ctxSales = document.getElementById('salesChart');
+                if(ctxSales) {
+                    instanceSalesChart = new Chart(ctxSales, {
+                        type: 'line',
+                        data: {
+                            labels: labelsData,
+                            datasets: [{
+                                label: 'Pendapatan',
+                                data: valuesData,
+                                borderColor: '#9333ea',
+                                backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } }
+                        }
+                    });
                 }
+
+                // 2. Doughnut Chart (Klasifikasi BI)
+                const ctxClass = document.getElementById('classificationChart');
+                if(ctxClass) {
+                    instanceClassChart = new Chart(ctxClass, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Fast Moving', 'Medium Moving', 'Slow Moving'],
+                            datasets: [{
+                                data: [classData.fast, classData.medium, classData.slow],
+                                backgroundColor: ['#9333ea', '#3b82f6', '#f1f5f9'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }
+            }
+
+            // Panggilan pertama saat halaman dimuat bawaan PHP data awal
+            buildCharts(
+                @json($labels), 
+                @json($values), 
+                @json($classification)
+            );
+
+            // TANGKAP DISPATCH REAKTIF DARI KASIR RAFI TANPA REFRESH
+            Livewire.on('bi-data-updated', (event) => {
+                const payload = event[0]; // Tangkap data array kembalian Livewire v3
+                buildCharts(payload.labels, payload.values, payload.classification);
             });
         });
     </script>

@@ -32,12 +32,7 @@ new class extends Component
                     </a>
                 </div>
 
-                <div class="hidden space-x-4 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate class="text-sm font-bold uppercase tracking-widest">
-                        {{ __('Overview') }}
-                    </x-nav-link>
-                    {{-- Tambahkan link lain di sini jika ada route baru nanti --}}
-                </div>
+            
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6 gap-4">

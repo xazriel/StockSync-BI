@@ -1,5 +1,6 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <div class="p-6 space-y-6">
-    {{-- Notifikasi Sukses/Gagal --}}
     @if (session()->has('message'))
         <div class="p-3 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-bold border border-emerald-200">
             ✅ {{ session('message') }}
@@ -36,11 +37,20 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-bold text-gray-600 uppercase flex items-center gap-2">
                     <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                    Produk Terpopuler (Real-time)
+                    Produk Terpopuler Hari Ini (Real-time)
                 </h3>
             </div>
-            <div style="height: 250px;" wire:ignore>
-                <canvas id="opChart"></canvas>
+
+            <div style="height: 250px;" class="relative">
+                @if(empty($labels))
+                    <div id="noDataMsg" class="absolute inset-0 flex items-center justify-center text-gray-400 text-sm italic bg-white z-10">
+                        Belum ada transaksi hari ini
+                    </div>
+                @endif
+
+                <div wire:ignore class="w-full h-full">
+                    <canvas id="opChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -56,7 +66,7 @@
                         <label for="fileImport" class="w-full py-3 bg-white border border-gray-200 rounded-lg text-sm font-bold hover:bg-gray-100 transition flex items-center justify-center gap-2 cursor-pointer text-gray-700 shadow-sm">
                             📥 {{ $fileImport ? 'File Siap Diupload' : 'Import Stok (Excel)' }}
                         </label>
-                        
+
                         @if($fileImport)
                             <button wire:click="importStock" wire:loading.attr="disabled" class="w-full py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 shadow-md transition disabled:opacity-50">
                                 <span wire:loading.remove>🔥 Konfirmasi Update Stok</span>
@@ -75,87 +85,92 @@
             {{-- Recent Logs --}}
             <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                 <h3 class="text-[10px] font-black text-gray-400 mb-3 uppercase tracking-widest flex items-center justify-between">
-                    Log Terakhir 
+                    Log Terakhir
                     <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
                 </h3>
                 <div class="space-y-3">
                     @forelse($recentLogs as $log)
-                    <div class="flex items-center gap-3 border-b border-gray-50 pb-2 last:border-0">
-                        <div class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                            {{ $log->created_at->format('H:i') }}
+                        <div class="flex items-center gap-3 border-b border-gray-50 pb-2 last:border-0">
+                            <div class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                {{ $log->created_at->format('H:i') }}
+                            </div>
+                            <div class="text-[11px] text-gray-600">
+                                <span class="font-bold text-gray-800">{{ $log->invoice_number }}</span>
+                                <br>Rp {{ number_format($log->total_price, 0, ',', '.') }}
+                            </div>
                         </div>
-                        <div class="text-[11px] text-gray-600">
-                            <span class="font-bold text-gray-800">{{ $log->invoice_number }}</span>
-                            <br>Rp {{ number_format($log->total_price, 0, ',', '.') }}
-                        </div>
-                    </div>
                     @empty
-                    <p class="text-[10px] text-gray-400 italic text-center py-2">Belum ada aktivitas</p>
+                        <p class="text-[10px] text-gray-400 italic text-center py-2">Belum ada aktivitas</p>
                     @endforelse
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- SCRIPT GRAPH --}}
     <script>
-        function renderOperationalChart() {
-            const ctx = document.getElementById('opChart');
-            if (!ctx) return;
+        (function () {
+            let opChartInstance = null;
 
-            // Hapus instance lama agar tidak tumpang tindih
-            let chartStatus = Chart.getChart("opChart");
-            if (chartStatus != undefined) {
-                chartStatus.destroy();
-            }
+            function renderOperationalChart(labels, values) {
+                const canvas = document.getElementById('opChart');
+                if (!canvas) return;
 
-            const labels = @json($labels);
-            const values = @json($values);
-
-            if (labels.length === 0) {
-                // Tampilkan pesan jika data kosong (Opsional)
-                ctx.parentElement.innerHTML = '<div class="h-full flex items-center justify-center text-gray-400 text-sm italic">Belum ada transaksi hari ini</div>';
-                return;
-            }
-
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Unit Terjual',
-                        data: values,
-                        backgroundColor: '#2563eb',
-                        borderRadius: 6,
-                        barThickness: 30
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: { backgroundColor: '#1e293b' }
-                    },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: '#f1f5f9' },
-                            ticks: { stepSize: 1 }
-                        },
-                        x: { grid: { display: false } }
-                    }
+                if (opChartInstance) {
+                    opChartInstance.destroy();
+                    opChartInstance = null;
                 }
+
+                const noDataMsg = document.getElementById('noDataMsg');
+
+                if (!labels || labels.length === 0) {
+                    if (noDataMsg) noDataMsg.style.display = 'flex';
+                    return;
+                }
+
+                if (noDataMsg) noDataMsg.style.display = 'none';
+
+                opChartInstance = new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Unit Terjual',
+                            data: values,
+                            backgroundColor: '#2563eb',
+                            borderRadius: 6,
+                            barThickness: 30,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { backgroundColor: '#1e293b' }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#f1f5f9' },
+                                ticks: { stepSize: 1, precision: 0 }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                renderOperationalChart(@json($labels), @json($values));
             });
-        }
 
-        // Jalankan saat pertama load
-        document.addEventListener('livewire:navigated', renderOperationalChart);
-        
-        // Jalankan setiap kali Livewire melakukan update data (PENTING!)
-        document.addEventListener('DOMContentLoaded', renderOperationalChart);
+            document.addEventListener('livewire:navigated', function () {
+                renderOperationalChart(@json($labels), @json($values));
+            });
 
-        // Hook khusus Livewire 3 untuk re-render setelah aksi
-        document.addEventListener('livewire:load', renderOperationalChart);
+            window.addEventListener('initChart', function (event) {
+                renderOperationalChart(event.detail.labels, event.detail.values);
+            });
+        })();
     </script>
 </div>

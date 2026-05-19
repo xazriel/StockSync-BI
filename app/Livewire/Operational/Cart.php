@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleDetail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Cart extends Component
@@ -23,7 +24,6 @@ class Cart extends Component
         }
 
         if (isset($this->cart[$productId])) {
-            // Cek apakah kalau ditambah stok masih cukup
             if ($this->cart[$productId]['qty'] < $product->stock) {
                 $this->cart[$productId]['qty']++;
             } else {
@@ -31,19 +31,19 @@ class Cart extends Component
             }
         } else {
             $this->cart[$productId] = [
-                'name' => $product->name,
+                'name'  => $product->name,
                 'price' => $product->selling_price,
-                'qty' => 1
+                'qty'   => 1,
             ];
         }
+
         $this->calculateTotal();
     }
 
-    // METHOD TAMBAH QUANTITY
     public function incrementQty($productId)
     {
         $product = Product::find($productId);
-        
+
         if ($this->cart[$productId]['qty'] < $product->stock) {
             $this->cart[$productId]['qty']++;
             $this->calculateTotal();
@@ -52,21 +52,18 @@ class Cart extends Component
         }
     }
 
-    // METHOD KURANG QUANTITY
     public function decrementQty($productId)
     {
         if (isset($this->cart[$productId])) {
             if ($this->cart[$productId]['qty'] > 1) {
                 $this->cart[$productId]['qty']--;
             } else {
-                // Jika qty 1 lalu dikurangi, otomatis hapus dari keranjang
                 unset($this->cart[$productId]);
             }
             $this->calculateTotal();
         }
     }
 
-    // METHOD HAPUS ITEM (Ikon Sampah)
     public function removeFromCart($productId)
     {
         if (isset($this->cart[$productId])) {
@@ -87,40 +84,41 @@ class Cart extends Component
             return;
         }
 
-        // Simpan ke tabel Sales (Header)
-        $sale = Sale::create([
-            'invoice_number' => 'INV-' . now()->format('YmdHis'),
-            'user_id' => Auth::id(),
-            'total_price' => $this->total,
-            'pay_amount' => $this->total, // Simulasi uang pas
-            'change_amount' => 0,
-        ]);
-
-        foreach ($this->cart as $id => $item) {
-            // Simpan ke detail
-            SaleDetail::create([
-                'sale_id' => $sale->id,
-                'product_id' => $id,
-                'quantity' => $item['qty'],
-                'selling_price' => $item['price'],
+        DB::transaction(function () {
+            $sale = Sale::create([
+                'invoice_number' => 'INV-' . now()->format('YmdHis'),
+                'user_id'        => Auth::id(),
+                'total_price'    => $this->total,
+                'pay_amount'     => $this->total,
+                'change_amount'  => 0,
             ]);
 
-            // Kurangi Stok HP
-            Product::find($id)->decrement('stock', $item['qty']);
-        }
+            foreach ($this->cart as $productId => $item) {
+                // Simpan detail item ke sale_items
+                SaleDetail::create([
+                    'sale_id'    => $sale->id,
+                    'product_id' => $productId,
+                    'quantity'   => $item['qty'],
+                    'price'      => $item['price'],
+                ]);
 
-        $this->cart = [];
+                // Kurangi stok produk
+                Product::find($productId)->decrement('stock', $item['qty']);
+            }
+        });
+
+        $this->cart  = [];
         $this->total = 0;
+
         session()->flash('success', 'Transaksi Berhasil!');
-        
-        // Refresh halaman agar stok di list produk terupdate
-        $this->dispatch('productUpdated'); 
+        $this->dispatch('productUpdated');
+        $this->dispatch('order-created');
     }
 
     public function render()
     {
         return view('livewire.operational.cart', [
-            'products' => Product::where('stock', '>', 0)->get()
+            'products' => Product::where('stock', '>', 0)->get(),
         ]);
     }
 }
