@@ -118,7 +118,9 @@ class Cart extends Component
     public function render()
     {
         return view('livewire.operational.cart', [
-            'products' => Product::where('stock', '>', 0)->get(),
+            'productsByBrand' => Product::where('stock', '>', 0)->get()->groupBy(function($item) {
+                return strtoupper($item->brand);
+            }),
         ]);
     }
 }

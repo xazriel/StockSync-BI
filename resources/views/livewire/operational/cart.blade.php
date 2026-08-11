@@ -1,20 +1,53 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
         {{-- DAFTAR PRODUK (BAGIAN KIRI) --}}
-        <div class="bg-white p-4 rounded shadow">
-            <h3 class="font-bold mb-4 text-gray-700 border-b pb-2 text-lg">📱 Pilih Unit HP</h3>
-            <div class="grid grid-cols-2 gap-4">
-                @foreach($products as $product)
-                    {{-- Di sini pakainya $product->id, bukan $id --}}
-                    <button wire:click="addToCart({{ $product->id }})" 
-                            class="p-3 border rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-all text-left group shadow-sm">
-                        <p class="font-bold text-gray-800 group-hover:text-blue-700">{{ $product->name }}</p>
-                        <div class="flex justify-between items-center mt-2">
-    <p class="text-[10px] px-2 py-0.5 rounded bg-gray-100 text-gray-600">
-        Stok: {{ $product->stock }} {{ $product->unit->short_name }}
-    </p>                        <p class="text-blue-600 font-bold text-sm">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</p>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+            <h3 class="font-black mb-5 text-slate-800 border-b border-slate-100 pb-3 text-lg tracking-tight flex items-center gap-2">
+                📱 Pilih Unit HP
+            </h3>
+            
+            <div class="space-y-3 custom-scrollbar" style="max-height: 600px; overflow-y: auto; padding-right: 4px;">
+                @forelse($productsByBrand as $brand => $products)
+                    <div x-data="{ open: false }" class="border border-slate-200 rounded-xl overflow-hidden shadow-sm transition-all duration-200">
+                        <button @click="open = !open" class="w-full p-4 bg-slate-50 flex justify-between items-center hover:bg-slate-100 transition-colors">
+                            <span class="font-black uppercase tracking-widest text-slate-700 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-tag text-slate-400 text-xs"></i> {{ $brand }}
+                            </span>
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-bold shadow-sm">
+                                    {{ count($products) }} Model
+                                </span>
+                                <svg :class="{'rotate-180': open}" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </button>
+                        
+                        <div x-show="open" x-transition.opacity class="p-4 bg-white border-t border-slate-100" style="display: none;">
+                            <div class="grid grid-cols-1 gap-3">
+                                @foreach($products as $product)
+                                    <button wire:click="addToCart({{ $product->id }})" 
+                                            class="p-4 border border-slate-200 rounded-xl hover:bg-blue-50 hover:border-blue-400 transition-all text-left group shadow-sm flex flex-col justify-between h-full">
+                                        <p class="font-black text-slate-800 group-hover:text-blue-700 text-sm leading-tight mb-3">
+                                            {{ $product->name }}
+                                        </p>
+                                        <div class="flex justify-between items-end mt-auto w-full">
+                                            <div class="flex flex-col gap-1">
+                                                <p class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-bold inline-block border border-slate-200 w-max">
+                                                    Stok: {{ $product->stock }} {{ $product->unit->short_name ?? 'Unit' }}
+                                                </p>
+                                            </div>
+                                            <p class="text-blue-600 font-black text-sm">
+                                                Rp {{ number_format($product->selling_price, 0, ',', '.') }}
+                                            </p>
+                                        </div>
+                                    </button>
+                                @endforeach
+                            </div>
                         </div>
-                    </button>
-                @endforeach
+                    </div>
+                @empty
+                    <div class="text-center py-8 text-slate-400 italic text-sm font-medium bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        Tidak ada produk tersedia atau stok habis.
+                    </div>
+                @endforelse
             </div>
         </div>
 

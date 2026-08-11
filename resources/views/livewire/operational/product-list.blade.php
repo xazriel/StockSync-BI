@@ -75,7 +75,6 @@
                             Analisis BI<br>
                             <span class="text-[9px] font-black text-purple-400 tracking-widest uppercase">🤖 C4.5 ALGORITHM</span>
                         </th>
-                        <th class="px-6 py-3 text-center bg-purple-50 text-purple-700 font-bold">Rekomendasi</th>
                     @endif
                 </tr>
             </thead>
@@ -128,9 +127,6 @@
                             <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                                 {{ $st }}
                             </span>
-                        </td>
-                        <td class="px-6 py-4 text-center font-bold text-sm text-purple-700 border-l border-purple-50">
-                            {{ $product->restock_recommendation > 0 ? '+'.$product->restock_recommendation : '-' }}
                         </td>
                     @endif
                 </tr>

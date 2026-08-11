@@ -26,9 +26,9 @@
                 <canvas id="classificationChart"></canvas>
             </div>
             <div class="mt-4 grid grid-cols-3 gap-2 text-center text-[10px] font-bold uppercase">
-                <div class="text-purple-600">Fast</div>
-                <div class="text-blue-500">Medium</div>
-                <div class="text-gray-400">Slow</div>
+                <div class="text-emerald-500">Fast</div>
+                <div class="text-amber-500">Medium</div>
+                <div class="text-rose-500">Slow</div>
             </div>
         </div>
     </div>
@@ -96,20 +96,18 @@
                 if (instanceSalesChart) instanceSalesChart.destroy();
                 if (instanceClassChart) instanceClassChart.destroy();
 
-                // 1. Line Chart (Pendapatan)
+                // 1. Bar Chart (Pendapatan)
                 const ctxSales = document.getElementById('salesChart');
                 if(ctxSales) {
                     instanceSalesChart = new Chart(ctxSales, {
-                        type: 'line',
+                        type: 'bar',
                         data: {
                             labels: labelsData,
                             datasets: [{
                                 label: 'Pendapatan',
                                 data: valuesData,
-                                borderColor: '#9333ea',
-                                backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                                fill: true,
-                                tension: 0.4
+                                backgroundColor: '#3b82f6',
+                                borderRadius: 4
                             }]
                         },
                         options: { 
@@ -129,7 +127,7 @@
                             labels: ['Fast Moving', 'Medium Moving', 'Slow Moving'],
                             datasets: [{
                                 data: [classData.fast, classData.medium, classData.slow],
-                                backgroundColor: ['#9333ea', '#3b82f6', '#f1f5f9'],
+                                backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
                                 borderWidth: 0
                             }]
                         },
