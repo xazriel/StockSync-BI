@@ -120,10 +120,10 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-2">Modul Executive Dashboard (Business Intelligence)</h3>
                     <p class="text-slate-600 text-sm mb-4 leading-relaxed">
-                        Dirancang khusus untuk kebutuhan pemilik usaha dalam menganalisis performa toko. Memanfaatkan rekaman histori data mentah penjualan untuk memetakan grafik keuntungan bersih dan prediksi pengadaan barang.
+                        Dirancang khusus untuk kebutuhan pemilik usaha dalam menganalisis performa toko. Memanfaatkan rekaman histori data mentah penjualan untuk melakukan klasifikasi performa produk dan memprediksi pengadaan barang secara cerdas.
                     </p>
                     <ul class="space-y-2 text-xs text-slate-500 font-medium">
-                        <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Analisis Profit Bersih Otomatis via Penghitungan Beban Pokok</li>
+                        <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Klasifikasi Penjualan (Fast/Slow Moving) Berbasis Algoritma C4.5</li>
                         <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Deteksi Ambang Batas Pengadaan Barang (Kolom <code class="bg-slate-200 px-1 py-0.5 rounded">min_stock</code>)</li>
                         <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Grafik Tren Penjualan Ritel untuk Manajemen Strategis</li>
                     </ul>

@@ -18,18 +18,31 @@ class OperationalDashboard extends Component
     use WithFileUploads;
 
     public $fileImport;
+    public $filter = 'today';
+    public $selectedInvoiceId = null;
 
     private function getTopProducts(): array
     {
-        $now        = Carbon::now();
-        $startOfDay = $now->copy()->startOfDay();
-        $endOfDay   = $now->copy()->endOfDay();
+        $now = Carbon::now();
+        if ($this->filter === 'today') {
+            $startDate = $now->copy()->startOfDay();
+            $endDate   = $now->copy()->endOfDay();
+        } elseif ($this->filter === 'week') {
+            $startDate = $now->copy()->startOfWeek();
+            $endDate   = $now->copy()->endOfWeek();
+        } elseif ($this->filter === 'month') {
+            $startDate = $now->copy()->startOfMonth();
+            $endDate   = $now->copy()->endOfMonth();
+        } else {
+            $startDate = $now->copy()->startOfDay();
+            $endDate   = $now->copy()->endOfDay();
+        }
 
         $topProducts = DB::table('sale_items')
             ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
             ->join('products', 'sale_items.product_id', '=', 'products.id')
             ->select('products.name', DB::raw('SUM(sale_items.quantity) as total_qty'))
-            ->whereBetween('sales.created_at', [$startOfDay, $endOfDay])
+            ->whereBetween('sales.created_at', [$startDate, $endDate])
             ->groupBy('products.id', 'products.name')
             ->orderBy('total_qty', 'DESC')
             ->limit(5)
@@ -82,14 +95,53 @@ class OperationalDashboard extends Component
         }
     }
 
+    public function showInvoiceDetails($saleId)
+    {
+        $this->selectedInvoiceId = $saleId;
+    }
+
+    public function closeInvoiceDetails()
+    {
+        $this->selectedInvoiceId = null;
+    }
+
+    #[\Livewire\Attributes\Computed]
+    public function selectedInvoice()
+    {
+        if (!$this->selectedInvoiceId) {
+            return null;
+        }
+        return Sale::with(['items.product', 'user'])->find($this->selectedInvoiceId);
+    }
+
+    public function updatedFilter()
+    {
+        $chart = $this->getTopProducts();
+        $this->dispatch('initChart',
+            labels: $chart['labels'],
+            values: $chart['values']
+        );
+    }
+
     public function render()
     {
-        $now        = Carbon::now();
-        $startOfDay = $now->copy()->startOfDay();
-        $endOfDay   = $now->copy()->endOfDay();
+        $now = Carbon::now();
+        if ($this->filter === 'today') {
+            $startDate = $now->copy()->startOfDay();
+            $endDate   = $now->copy()->endOfDay();
+        } elseif ($this->filter === 'week') {
+            $startDate = $now->copy()->startOfWeek();
+            $endDate   = $now->copy()->endOfWeek();
+        } elseif ($this->filter === 'month') {
+            $startDate = $now->copy()->startOfMonth();
+            $endDate   = $now->copy()->endOfMonth();
+        } else {
+            $startDate = $now->copy()->startOfDay();
+            $endDate   = $now->copy()->endOfDay();
+        }
 
-        $todaySalesCount = Sale::whereBetween('created_at', [$startOfDay, $endOfDay])->count();
-        $todayRevenue    = Sale::whereBetween('created_at', [$startOfDay, $endOfDay])->sum('total_price');
+        $todaySalesCount = Sale::whereBetween('created_at', [$startDate, $endDate])->count();
+        $todayRevenue    = Sale::whereBetween('created_at', [$startDate, $endDate])->sum('total_price');
 
         $chart = $this->getTopProducts();
 

@@ -71,7 +71,10 @@
                     {{-- HEADER KHUSUS BINTANG --}}
                     @if($isBintang)
                         <th class="px-6 py-3 text-center border-l">Status</th>
-                        <th class="px-6 py-3 text-center bg-purple-50 text-purple-700 border-l border-purple-100 font-bold">Analisis BI</th>
+                        <th class="px-6 py-3 text-center bg-purple-50 text-purple-700 border-l border-purple-100 font-bold">
+                            Analisis BI<br>
+                            <span class="text-[9px] font-black text-purple-400 tracking-widest uppercase">🤖 C4.5 ALGORITHM</span>
+                        </th>
                         <th class="px-6 py-3 text-center bg-purple-50 text-purple-700 font-bold">Rekomendasi</th>
                     @endif
                 </tr>

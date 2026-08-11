@@ -93,8 +93,15 @@ class Product extends Model
     public function getRestockRecommendationAttribute()
     {
         if ($this->stock <= $this->reorder_point) {
-            // Saran: Penuhi kebutuhan untuk 10 hari kedepan
-            $needed = ceil(($this->moving_average * 10) - $this->stock);
+            // Saran Order: Minimal kembalikan ke batas aman (ROP) ditambah estimasi penjualan 10 hari ke depan
+            $targetStock = $this->reorder_point + ($this->moving_average * 10);
+            $needed = ceil($targetStock - $this->stock);
+            
+            // Pastikan jika stok di bawah ROP, minimal order adalah untuk memenuhi safety stock (min_stock)
+            if ($needed < $this->min_stock) {
+                $needed = $this->min_stock;
+            }
+            
             return $needed > 0 ? $needed : 0;
         }
         return 0;
