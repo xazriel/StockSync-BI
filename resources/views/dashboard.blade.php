@@ -89,7 +89,6 @@
 
                         {{-- SECTION 4: DAFTAR INVENTARIS --}}
                         <section>
-                            <h4 class="text-sm font-black text-slate-700 uppercase tracking-[0.2em] mb-6 px-2">📦 Daftar Stok Inventaris</h4>
                             <livewire:operational.product-list :key="'list-staff-' . Auth::id()" />
                         </section>
 

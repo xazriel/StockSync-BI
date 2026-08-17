@@ -19,9 +19,7 @@
             <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-1 text-center">
                 📊 Komposisi Inventaris
             </h3>
-            <p class="text-[9px] text-purple-500 font-bold uppercase tracking-widest text-center mb-4">
-                🤖 Klasifikasi C4.5 Decision Tree
-            </p>
+
             <div style="height: 250px;">
                 <canvas id="classificationChart"></canvas>
             </div>
