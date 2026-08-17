@@ -154,11 +154,7 @@
                             <span>Jumlah Bayar</span>
                             <span class="text-slate-800">Rp {{ number_format($this->selectedInvoice->pay_amount, 0, ',', '.') }}</span>
                         </div>
-                        <div class="w-full border-t border-dashed border-slate-200 my-2"></div>
-                        <div class="flex justify-between text-sm font-black text-emerald-600 uppercase tracking-widest">
-                            <span>Kembalian</span>
-                            <span>Rp {{ number_format($this->selectedInvoice->change_amount, 0, ',', '.') }}</span>
-                        </div>
+
                     </div>
                 </div>
             </div>
